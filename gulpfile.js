@@ -1,3 +1,4 @@
+// Initialize Gulp plugins.
 var gulp = require('gulp'),
     plumber = require('gulp-plumber'),
     rename = require('gulp-rename');
@@ -12,6 +13,15 @@ var sass = require('gulp-sass');
 var browserSync = require('browser-sync');
 var spritesmith = require('gulp.spritesmith');
 
+// Assets paths.
+var imagesFolder    = 'images/',
+    cssFolder       = 'css/',
+    scssFolder      = 'scss/',
+    jsFolder        = 'js/',
+    spriteFolder    = imagesFolder + 'src/sprite/',
+    spriteImageName = 'sprite.png',
+    spriteCssName   = '_sprite.scss';
+
 gulp.task('browser-sync', function() {
   browserSync({
     proxy: ""
@@ -23,26 +33,26 @@ gulp.task('bs-reload', function () {
 });
 
 gulp.task('images', function(){
-  gulp.src('images/src/**/*')
+  gulp.src(imagesFolder + 'src/**/*')
     .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
-    .pipe(gulp.dest('images/'));
+    .pipe(gulp.dest(imagesFolder));
 });
 
 gulp.task('sprite', function() {
   var spriteData =
-    gulp.src('./images/sprite/*.png')
+    gulp.src(spriteFolder + '*.png')
     .pipe(spritesmith({
-      imgName: 'sprite.png',
-      cssName: '_sprite.scss',
-      imgPath: '../images/sprite.png'
+      imgName: spriteImageName,
+      cssName: spriteCssName,
+      imgPath: imagesFolder + spriteImageName
     }));
 
-  spriteData.img.pipe(gulp.dest('./images/'));
-  spriteData.css.pipe(gulp.dest('./scss/base/'));
+  spriteData.img.pipe(gulp.dest(imagesFolder));
+  spriteData.css.pipe(gulp.dest(scssFolder + 'base/'));
 });
 
 gulp.task('styles', function(){
-  gulp.src(['scss/**/*.scss'])
+  gulp.src([scssFolder + '**/*.scss'])
     .pipe(plumber({
       errorHandler: function (error) {
         console.log(error.message);
@@ -50,10 +60,10 @@ gulp.task('styles', function(){
     }}))
     .pipe(sass())
     .pipe(autoprefixer('last 2 versions'))
-    .pipe(gulp.dest('css/'))
+    .pipe(gulp.dest(cssFolder))
     .pipe(rename({suffix: '.min'}))
     .pipe(minifycss())
-    .pipe(gulp.dest('css/'))
+    .pipe(gulp.dest(cssFolder))
     .pipe(browserSync.reload({stream:true}))
 });
 
@@ -75,8 +85,8 @@ gulp.task('scripts', function(){
 });
 
 gulp.task('default', ['browser-sync'], function(){
-  gulp.watch("scss/**/*.scss", ['styles']);
+  gulp.watch(scssFolder + "**/*.scss", ['styles']);
   gulp.watch("js/src/**/*.js", ['scripts']);
-  gulp.watch("images/sprite/*.png", ['sprite']);
+  gulp.watch(spriteFolder + "*.png", ['sprite']);
   gulp.watch("*.html", ['bs-reload']);
 });
